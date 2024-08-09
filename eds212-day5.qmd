@@ -12,6 +12,7 @@ chunk_output_type: console
 #| include: false
 # Load library ----
 library(tidyverse)
+library(ggplot2)
 ```
 
 `head()`, `tail()`, `dim()` on the `dplyr::starwars` data frame: 
@@ -63,7 +64,11 @@ sw_height_mean <- round(mean(starwars$height, na.rm = TRUE),
 The mean height (cm) of all Starwars characters is `r sw_height_mean`
 
 ```{r}
-ggplot()
+df <- starwars %>%
+  group_by(films) %>%
+  summarize(count = n())
+
+ggplot(df, aes(x = homeworld, y = count)) 
 
 ```
 

@@ -15,7 +15,7 @@ library(tidyverse)
 library(ggplot2)
 ```
 
-`head()`, `tail()`, `dim()` on the `dplyr::starwars` data frame: 
+`head()`, `tail()`, `dim()` on the `dplyr::starwars` data frame:
 
 ```{r}
 #| include: false
@@ -35,6 +35,7 @@ dim(starwars)
 -Create a ggplot (scatterplot) pf character mass (y- axis) and height (x-axis)
 
 -Update the color of the points so that color changes based on the value of `mass`
+
 ```{r}
 #| echo: false
 ggplot(starwars, aes(x = height, y = mass, color = mass, size = 100)) + 
@@ -42,9 +43,10 @@ ggplot(starwars, aes(x = height, y = mass, color = mass, size = 100)) +
   labs(title = "Mass of Starwars Characters in Relation to Height", x = "Height (cm)", y = "Mass (kg)")
 ```
 
-- Create a histogram of character heights 
-- Update the fill color (`fill`)to purple and the outside border line (`color`) of each histogram bin to orange
-- Update your code chunk options so that your code and output graph appear in the rendered doc (no warning or message)
+-   Create a histogram of character heights
+-   Update the fill color (`fill`)to purple and the outside border line (`color`) of each histogram bin to orange
+-   Update your code chunk options so that your code and output graph appear in the rendered doc (no warning or message)
+
 ```{r}
 #| fig-cap: "Histogram showing disturbution of character height in Starwars"
 #| fig-alt: "Text can be entered he for visually impared"
@@ -64,13 +66,52 @@ sw_height_mean <- round(mean(starwars$height, na.rm = TRUE),
 The mean height (cm) of all Starwars characters is `r sw_height_mean`
 
 ```{r}
-df <- starwars %>%
-  group_by(films) %>%
-  summarize(count = n())
+movies <- starwars %>% dplyr::select(films)
 
-ggplot(df, aes(x = homeworld, y = count)) 
+movies <- movies %>% dplyr::mutate(films=str_replace_all(films, "\\bc\\(|\\)|'|\"","")) %>% separate_rows(films, sep=",")
+
+check <- starwars %>% dplyr::mutate(films=str_replace_all(films, "\\bc\\(|\\)|'|\"","")) %>% separate_rows(films, sep=",")
+
+movies <- movies %>%
+  group_by(films) %>%
+  summarize(count = n()) %>% 
+  filter(count)
+
+
+
+
+characters <- check %>% 
+  group_by(name) %>%
+  summarize(count = n()) %>% 
+  filter(count > 1)
+
+
+# plot bar graph 
+ggplot(characters, aes(x = name, y = count, fill = count)) +  
+  geom_col() + 
+  coord_polar() + 
+  labs(title = "Frequency of Characters in Starwars Franchise", x = NULL, y = NULL) + 
+  theme(
+    axis.text = element_text(size = 5)
+  )
+
+# Calculate the angles of the labels
+number_of_bar <- nrow(characters)
+angle <-  90 - 360 * (characters$count) /number_of_bar
+
+# calculate the alignment of labels: right or left
+# If I am on the left part of the plot, my labels have currently an angle < -90
+characters$hjust<-ifelse( angle < -90, 1, 0)
+
+# flip angle BY to make them readable
+characters$angle<-ifelse(angle < -90, angle+180, angle)
+
+
+
+
 
 ```
 
-
-
+```{r}
+ggplot(starwars, aes(x = sex)) + geom_bar(fill = "cadetblue3") + labs(title = "Total Sex Count of Characters in Starwars Series")
+```
